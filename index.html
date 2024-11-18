@@ -80,11 +80,11 @@
     renderer.setClearColor(0x000000, 0);
 
     // Enhanced lighting setup
-    const mainLight = new THREE.DirectionalLight(0xffffff, 1);
+    const mainLight = new THREE.DirectionalLight(0xffffff, 0.9);
     mainLight.position.set(5, 5, 5);
     scene.add(mainLight);
 
-    const fillLight = new THREE.DirectionalLight(0xffffff, 1);
+    const fillLight = new THREE.DirectionalLight(0xffffff, 0.9);
     fillLight.position.set(-5, 0, 5);
     scene.add(fillLight);
 
@@ -92,7 +92,7 @@
     backLight.position.set(0, -5, -5);
     scene.add(backLight);
 
-    const ambientLight = new THREE.AmbientLight(0x404040, 0.7);
+    const ambientLight = new THREE.AmbientLight(0x404040, 0.5);
     scene.add(ambientLight);
 
     let dice;
@@ -112,7 +112,7 @@
         (object) => {
             dice = object;
             dice.scale.set(0.02, 0.02, 0.02);
-            dice.position.set(0, -1, 0);
+            dice.position.set(0, 2, 0);
 
             dice.traverse((child) => {
                 if (child.isMesh) {
