@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>D20 Dice Roll with FBX Model - Toon Shader (Bright Coral) with Enhanced Lighting</title>
+    <title>D20 Dice Roll with FBX Model - Enhanced Toon Shader and Lighting</title>
     <style>
         body, html {
             margin: 0;
@@ -136,6 +136,26 @@
     );
 
     camera.position.z = 5;
+
+    // Enable shadow rendering
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+    mainLight.castShadow = true;
+    fillLight.castShadow = true;
+    backLight.castShadow = true;
+
+    // Adjust shadow camera
+    mainLight.shadow.camera.near = 1;
+    mainLight.shadow.camera.far = 20;
+    mainLight.shadow.camera.top = 10;
+    mainLight.shadow.camera.right = 10;
+    mainLight.shadow.camera.bottom = -10;
+    mainLight.shadow.camera.left = -10;
+
+    // Increase shadow map resolution
+    mainLight.shadow.mapSize.width = 1024;
+    mainLight.shadow.mapSize.height = 1024;
 
     let rolling = false;
     let targetRotation = { x: 0, y: 0, z: 0 };
