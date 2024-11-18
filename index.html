@@ -93,6 +93,9 @@ body, html {
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/loaders/FBXLoader.js"></script>
 <script>
+import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(75, 300 / 300, 0.1, 1000);
 const renderer = new THREE.WebGLRenderer({
@@ -130,7 +133,12 @@ let diceMaterial = new THREE.MeshPhongMaterial({
     emissive: 0x331111,
     emissiveIntensity: 0.1
 });
+const composer = new EffectComposer(renderer);
+const renderPass = new RenderPass(scene, camera);
+composer.addPass(renderPass);
 
+const bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 1.5, 0.4, 0.85);
+composer.addPass(bloomPass);
 loader.load(
     'dice.fbx',
     (object) => {
@@ -193,7 +201,7 @@ function animate(time) {
         }
     }
 
-    renderer.render(scene, camera);
+    composer.render();
 }
 
 document.getElementById('rollButton').addEventListener('click', () => {
