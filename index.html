@@ -69,7 +69,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/loaders/FBXLoader.js"></script>
     <script>
-        const scene = new THREE.Scene();
+ const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(75, 300 / 300, 0.1, 1000);
 const renderer = new THREE.WebGLRenderer({
     canvas: document.getElementById('diceCanvas'),
@@ -88,12 +88,26 @@ scene.add(ambientLight);
 
 let dice;
 const loader = new THREE.FBXLoader();
+const textureLoader = new THREE.TextureLoader();
+
+// Load the texture
+const texture = textureLoader.load('internal_ground_ao_texture.jpeg');
+
 loader.load(
     'dice.fbx',
     (object) => {
         dice = object;
         dice.scale.set(0.02, 0.02, 0.02);
         dice.position.set(0, 0, 0);
+
+        // Apply the texture to all materials in the model
+        dice.traverse((child) => {
+            if (child.isMesh) {
+                child.material.map = texture;
+                child.material.needsUpdate = true;
+            }
+        });
+
         scene.add(dice);
     },
     (xhr) => {
@@ -105,6 +119,8 @@ loader.load(
 );
 
 camera.position.z = 5;
+
+// Rest of your code (rolling animation, etc.) remains the same
 
 let rolling = false;
 let targetRotation = { x: 0, y: 0, z: 0 };
