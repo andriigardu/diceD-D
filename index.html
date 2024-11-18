@@ -69,7 +69,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/loaders/FBXLoader.js"></script>
     <script>
- const scene = new THREE.Scene();
+const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(75, 300 / 300, 0.1, 1000);
 const renderer = new THREE.WebGLRenderer({
     canvas: document.getElementById('diceCanvas'),
@@ -88,10 +88,27 @@ scene.add(ambientLight);
 
 let dice;
 const loader = new THREE.FBXLoader();
-const textureLoader = new THREE.TextureLoader();
 
-// Load the texture
-const texture = textureLoader.load('internal_ground_ao_texture.jpeg');
+// Create a gradient texture
+const canvas = document.createElement('canvas');
+const context = canvas.getContext('2d');
+canvas.width = 256;
+canvas.height = 256;
+const gradient = context.createLinearGradient(0, 0, 256, 256);
+gradient.addColorStop(0, '#8A8A8A');
+gradient.addColorStop(1, '#D3D3D3');
+context.fillStyle = gradient;
+context.fillRect(0, 0, 256, 256);
+
+const texture = new THREE.CanvasTexture(canvas);
+
+// Create a metallic material
+const material = new THREE.MeshStandardMaterial({
+    map: texture,
+    metalness: 0.8,
+    roughness: 0.2,
+    envMapIntensity: 1.0
+});
 
 loader.load(
     'dice.fbx',
@@ -100,11 +117,10 @@ loader.load(
         dice.scale.set(0.02, 0.02, 0.02);
         dice.position.set(0, 0, 0);
 
-        // Apply the texture to all materials in the model
+        // Apply the material to all meshes in the model
         dice.traverse((child) => {
             if (child.isMesh) {
-                child.material.map = texture;
-                child.material.needsUpdate = true;
+                child.material = material;
             }
         });
 
