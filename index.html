@@ -154,6 +154,8 @@ loader.load(
         });
 
         scene.add(dice);
+        // Render the scene immediately after adding the dice
+        composer.render();
     },
     (xhr) => {
         console.log((xhr.loaded / xhr.total * 100) + '% loaded');
@@ -163,7 +165,7 @@ loader.load(
     }
 );
 
-camera.position.z = 3; // Adjust camera position to make the dice more visible
+camera.position.z = 2.5; // Adjust camera position to make the dice more visible
 
 // Enable shadow rendering with higher quality
 renderer.shadowMap.enabled = true;
@@ -184,7 +186,7 @@ const renderPass = new THREE.RenderPass(scene, camera);
 composer.addPass(renderPass);
 
 const bokehPass = new THREE.BokehPass(scene, camera, {
-    focus: 3,
+    focus: 2.5,
     aperture: 0.005,
     maxblur: 0.01,
     width: 300,
@@ -213,13 +215,13 @@ function animate(time) {
             dice.rotation.z = targetRotation.z * easedProgress;
 
             // Adjust focus based on dice rotation
-            bokehPass.uniforms.focus.value = 3 + Math.sin(easedProgress * Math.PI) * 0.5;
+            bokehPass.uniforms.focus.value = 2.5 + Math.sin(easedProgress * Math.PI) * 0.5;
         } else {
             dice.rotation.x = targetRotation.x;
             dice.rotation.y = targetRotation.y;
             dice.rotation.z = targetRotation.z;
             rolling = false;
-            bokehPass.uniforms.focus.value = 3;
+            bokehPass.uniforms.focus.value = 2.5;
         }
     }
 
@@ -243,6 +245,7 @@ document.getElementById('rollButton').addEventListener('click', () => {
 function changeDiceColor(color) {
     if (dice) {
         diceMaterial.color.setHex(color);
+        composer.render(); // Re-render the scene when color changes
     }
 }
 
