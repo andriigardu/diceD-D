@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>D20 Dice Roll with FBX Model - Enhanced Toon Shader, Lighting, and Bright Number</title>
+    <title>D20 Dice Roll with FBX Model - Enhanced Visibility and Lighting</title>
     <style>
         body, html {
             margin: 0;
@@ -80,57 +80,43 @@
     renderer.setClearColor(0x000000, 0);
 
     // Enhanced lighting setup
-    const mainLight = new THREE.DirectionalLight(0xffffff, 1.5);
+    const mainLight = new THREE.DirectionalLight(0xffffff, 2);
     mainLight.position.set(5, 5, 5);
     scene.add(mainLight);
 
-    const fillLight = new THREE.DirectionalLight(0xffffff, 1);
+    const fillLight = new THREE.DirectionalLight(0xffffff, 1.5);
     fillLight.position.set(-5, 0, 5);
     scene.add(fillLight);
 
-    const backLight = new THREE.DirectionalLight(0xffffff, 0.8);
+    const backLight = new THREE.DirectionalLight(0xffffff, 1);
     backLight.position.set(0, -5, -5);
     scene.add(backLight);
 
-    const ambientLight = new THREE.AmbientLight(0x404040, 0.8);
+    const ambientLight = new THREE.AmbientLight(0x404040, 1);
     scene.add(ambientLight);
 
     let dice;
     const loader = new THREE.FBXLoader();
 
-    // Create a custom toon material with enhanced shading
-    const gradientTexture = new THREE.TextureLoader().load('https://threejs.org/examples/textures/gradients/fiveTone.jpg');
-    gradientTexture.minFilter = THREE.NearestFilter;
-    gradientTexture.magFilter = THREE.NearestFilter;
-
-    const toonMaterial = new THREE.MeshToonMaterial({
+    // Create a custom material with enhanced visibility
+    const diceMaterial = new THREE.MeshPhongMaterial({
         color: 0xFF6B6B, // Bright Coral color
-        gradientMap: gradientTexture,
-        shininess: 10,
-        specular: new THREE.Color(0xffffff)
+        specular: 0x050505,
+        shininess: 100,
+        emissive: 0x331111,
+        emissiveIntensity: 0.2
     });
-
-    // Create a bright number to render on top of the dice
-    const numberGeometry = new THREE.TextGeometry('20', {
-        font: new THREE.Font('helvetiker'),
-        size: 0.5,
-        height: 0.1,
-    });
-    const numberMaterial = new THREE.MeshPhongMaterial({ color: 0xFFFFFF, emissive: 0xFFFFFF });
-    const numberMesh = new THREE.Mesh(numberGeometry, numberMaterial);
-    numberMesh.position.set(0, 0, 0.5);
-    scene.add(numberMesh);
 
     loader.load(
         'dice.fbx',
         (object) => {
             dice = object;
             dice.scale.set(0.02, 0.02, 0.02);
-            dice.position.set(0, 0.5, 0);
+            dice.position.set(0, 0, 0);
 
             dice.traverse((child) => {
                 if (child.isMesh) {
-                    child.material = toonMaterial;
+                    child.material = diceMaterial;
                     child.castShadow = true;
                     child.receiveShadow = true;
                 }
@@ -156,18 +142,6 @@
     fillLight.castShadow = true;
     backLight.castShadow = true;
 
-    // Adjust shadow camera
-    mainLight.shadow.camera.near = 1;
-    mainLight.shadow.camera.far = 20;
-    mainLight.shadow.camera.top = 10;
-    mainLight.shadow.camera.right = 10;
-    mainLight.shadow.camera.bottom = -10;
-    mainLight.shadow.camera.left = -10;
-
-    // Increase shadow map resolution
-    mainLight.shadow.mapSize.width = 1024;
-    mainLight.shadow.mapSize.height = 1024;
-
     let rolling = false;
     let targetRotation = { x: 0, y: 0, z: 0 };
     const rollDuration = 1000;
@@ -187,14 +161,10 @@
                 dice.rotation.x = targetRotation.x * easedProgress;
                 dice.rotation.y = targetRotation.y * easedProgress;
                 dice.rotation.z = targetRotation.z * easedProgress;
-
-                // Update number position to follow dice rotation
-                numberMesh.rotation.copy(dice.rotation);
             } else {
                 dice.rotation.x = targetRotation.x;
                 dice.rotation.y = targetRotation.y;
                 dice.rotation.z = targetRotation.z;
-                numberMesh.rotation.copy(dice.rotation);
                 rolling = false;
             }
         }
@@ -213,14 +183,6 @@
 
             targetRotation.x += Math.PI * 2 * Math.floor(Math.random() * 3);
             targetRotation.y += Math.PI * 2 * Math.floor(Math.random() * 3);
-
-            // Update number to a random value between 1 and 20
-            const randomNumber = Math.floor(Math.random() * 20) + 1;
-            numberMesh.geometry = new THREE.TextGeometry(randomNumber.toString(), {
-                font: new THREE.Font('helvetiker'),
-                size: 0.5,
-                height: 0.1,
-            });
         }
     });
 
