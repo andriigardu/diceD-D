@@ -81,6 +81,17 @@ const material = new THREE.MeshStandardMaterial({
 const dice = new THREE.Mesh(geometry, material);
 scene.add(dice);
 
+// Create a plane for the shadow catcher
+const shadowCatcherGeometry = new THREE.PlaneGeometry(10, 10);
+const shadowCatcherMaterial = new THREE.ShadowMaterial();
+shadowCatcherMaterial.opacity = 0.3; // Adjust this value to control shadow intensity
+
+const shadowCatcher = new THREE.Mesh(shadowCatcherGeometry, shadowCatcherMaterial);
+shadowCatcher.rotation.x = -Math.PI / 2;
+shadowCatcher.position.y = -2; // Adjust this to match your scene
+shadowCatcher.receiveShadow = true;
+scene.add(shadowCatcher);
+
 const loader = new THREE.TextureLoader();
 loader.load('https://i.imgur.com/ikm0qHk.jpg', (texture) => {
   material.map = texture;
@@ -140,6 +151,7 @@ function animate(time) {
   renderer.render(scene, camera);
 }
 renderer.setClearColor(0x000000, 0); // The second parameter (alpha) is set to 0
+
 // Enable shadow rendering
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
@@ -179,7 +191,11 @@ document.getElementById('rollButton').addEventListener('click', () => {
 // Make the dice cast and receive shadows
 dice.castShadow = true;
 dice.receiveShadow = true;
+// Ensure your light is set up to cast shadows
+light.castShadow = true;
 
+// Make sure your dice is set to cast shadows
+dice.castShadow = true;
 animate();
 </script>
 </body>
