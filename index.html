@@ -1,202 +1,151 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Aligned D20 Dice</title>
-<style>
-body, #container {
-  margin: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 100vh;
-  background: transparent;
-}
-
-canvas {
-    display: block;
-    width: 300px;
-    height: 300px;
-    background-color: transparent;
-}
-
-button {
-  margin-top: 10px;
-  padding: 10px 20px;
-  font-size: 16px;
-  color: white;
-  background: linear-gradient(135deg, #ff00cc, #3333ff, #00ffcc);
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  animation: glow 3s infinite linear;
-}
-
-button:hover {
-  filter: brightness(1.2);
-}
-
-@keyframes glow {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
-}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>D20 Dice Roll</title>
+    <style>
+        body {
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f0f0f0;
+            font-family: Arial, sans-serif;
+        }
+        #renderContainer {
+            border: 1px solid #808080;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        #rollButton {
+            position: absolute;
+            bottom: 20px;
+            padding: 10px 20px;
+            font-size: 18px;
+            cursor: pointer;
+            background: linear-gradient(45deg, #4a0e8f, #9921e8);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 15px rgba(153, 33, 232, 0.5);
+        }
+        #rollButton:hover {
+            background: linear-gradient(45deg, #5a1e9f, #a931f8);
+            box-shadow: 0 0 20px rgba(153, 33, 232, 0.8);
+        }
+        #rollButton:active {
+            transform: scale(0.95);
+            box-shadow: 0 0 25px rgba(153, 33, 232, 1);
+        }
+        @keyframes glowAnimation {
+            0% { box-shadow: 0 0 15px rgba(153, 33, 232, 0.5); }
+            50% { box-shadow: 0 0 25px rgba(153, 33, 232, 0.8); }
+            100% { box-shadow: 0 0 15px rgba(153, 33, 232, 0.5); }
+        }
+        #rollButton {
+            animation: glowAnimation 2s infinite;
+        }
+    </style>
 </head>
 <body>
-<div id="container">
-  <canvas id="diceCanvas"></canvas>
-  <button id="rollButton">Roll the Dice!</button>
-</div>
+    <div id="renderContainer">
+        <canvas id="diceCanvas"></canvas>
+    </div>
+    <button id="rollButton">Roll the Dice!</button>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
-<script>
-const renderer = new THREE.WebGLRenderer({
-  canvas: document.getElementById('diceCanvas'),
-  alpha: true,
-  antialias: true
-});
-renderer.setSize(300, 300);
-renderer.setClearColor(0x000000, 0);
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({
+            canvas: document.getElementById('diceCanvas'),
+            alpha: true,
+            antialias: true
+        });
+        renderer.setSize(400, 400);
+        renderer.setClearColor(0x000000, 0);
 
-const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
-camera.position.z = 5;
+        const light = new THREE.PointLight(0xffffff, 1, 100);
+        light.position.set(10, 10, 10);
+        scene.add(light);
 
-const light = new THREE.PointLight(0xffffff, 1, 100);
-light.position.set(10, 10, 10);
-scene.add(light);
-const ambientLight = new THREE.AmbientLight(0x404040);
-scene.add(ambientLight);
+        // Improved shadow catcher
+        const shadowCatcherGeometry = new THREE.PlaneGeometry(20, 20);
+        const shadowCatcherMaterial = new THREE.ShadowMaterial();
+        shadowCatcherMaterial.opacity = 0.2;
+        const shadowCatcher = new THREE.Mesh(shadowCatcherGeometry, shadowCatcherMaterial);
+        shadowCatcher.rotation.x = -Math.PI / 2;
+        shadowCatcher.position.y = -2;
+        shadowCatcher.receiveShadow = true;
+        scene.add(shadowCatcher);
 
-const geometry = new THREE.IcosahedronGeometry(2);
-const material = new THREE.MeshStandardMaterial({
-  color: 0x444444,
-  roughness: 0.3,
-  metalness: 0.8
-});
+        const geometry = new THREE.IcosahedronGeometry(2);
+        const material = new THREE.MeshStandardMaterial({
+            color: 0x8844aa,
+            metalness: 0.8,
+            roughness: 0.2
+        });
+        const dice = new THREE.Mesh(geometry, material);
+        dice.castShadow = true;
+        scene.add(dice);
 
-const dice = new THREE.Mesh(geometry, material);
-scene.add(dice);
+        camera.position.z = 7;
 
-// Create a plane for the shadow catcher
-const shadowCatcherGeometry = new THREE.PlaneGeometry(10, 10);
-const shadowCatcherMaterial = new THREE.ShadowMaterial();
-shadowCatcherMaterial.opacity = 0.3; // Adjust this value to control shadow intensity
+        light.castShadow = true;
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
-const shadowCatcher = new THREE.Mesh(shadowCatcherGeometry, shadowCatcherMaterial);
-shadowCatcher.rotation.x = -Math.PI / 2;
-shadowCatcher.position.y = -2; // Adjust this to match your scene
-shadowCatcher.receiveShadow = true;
-scene.add(shadowCatcher);
+        light.shadow.mapSize.width = 1024;
+        light.shadow.mapSize.height = 1024;
+        light.shadow.camera.near = 0.5;
+        light.shadow.camera.far = 500;
+        light.shadow.radius = 8;
 
-const loader = new THREE.TextureLoader();
-loader.load('https://i.imgur.com/ikm0qHk.jpg', (texture) => {
-  material.map = texture;
-  material.needsUpdate = true;
-});
+        let rolling = false;
+        let targetRotation = { x: 0, y: 0, z: 0 };
+        const rollDuration = 2000;
+        let rollStartTime;
 
-const rotations = [
-  { x: 0, y: 0, z: 0 },
-  { x: 0, y: 2 * Math.PI / 5, z: 0 },
-  { x: 2 * Math.PI / 5, y: Math.PI / 5, z: 0 },
-  { x: -2 * Math.PI / 5, y: 3 * Math.PI / 5, z: 0 },
-  { x: Math.PI, y: 0, z: 0 },
-  { x: 2 * Math.PI / 5, y: -Math.PI / 5, z: 0 },
-  { x: -2 * Math.PI / 5, y: -3 * Math.PI / 5, z: 0 },
-  { x: 0, y: -2 * Math.PI / 5, z: 0 },
-  { x: -2 * Math.PI / 5, y: Math.PI / 5, z: 0 },
-  { x: 2 * Math.PI / 5, y: 3 * Math.PI / 5, z: 0 },
-  { x: 0, y: 4 * Math.PI / 5, z: 0 },
-  { x: 4 * Math.PI / 5, y: 0, z: 0 },
-  { x: -4 * Math.PI / 5, y: 2 * Math.PI / 5, z: 0 },
-  { x: 4 * Math.PI / 5, y: 2 * Math.PI / 5, z: 0 },
-  { x: -4 * Math.PI / 5, y: -2 * Math.PI / 5, z: 0 },
-  { x: 4 * Math.PI / 5, y: -2 * Math.PI / 5, z: 0 },
-  { x: 0, y: -4 * Math.PI / 5, z: 0 },
-  { x: 2 * Math.PI / 5, y: -3 * Math.PI / 5, z: 0 },
-  { x: -2 * Math.PI / 5, y: -Math.PI / 5, z: 0 },
-  { x: -4 * Math.PI / 5, y: 0, z: 0 }
-];
+        function animate(time) {
+            requestAnimationFrame(animate);
 
-let rolling = false;
-let targetRotation = { x: 0, y: 0, z: 0 };
-let rollDuration = 2000;
-let rollStartTime;
+            if (rolling) {
+                const elapsedTime = time - rollStartTime;
+                const progress = Math.min(elapsedTime / rollDuration, 1);
 
-function animate(time) {
-  requestAnimationFrame(animate);
+                if (progress < 1) {
+                    const easeOutCubic = (t) => 1 - Math.pow(1 - t, 3);
+                    const easedProgress = easeOutCubic(progress);
 
-  if (rolling) {
-    const elapsedTime = time - rollStartTime;
-    const progress = Math.min(elapsedTime / rollDuration, 1);
+                    dice.rotation.x = targetRotation.x * easedProgress;
+                    dice.rotation.y = targetRotation.y * easedProgress;
+                    dice.rotation.z = targetRotation.z * easedProgress;
+                } else {
+                    dice.rotation.x = targetRotation.x;
+                    dice.rotation.y = targetRotation.y;
+                    dice.rotation.z = targetRotation.z;
+                    rolling = false;
+                }
+            }
 
-    if (progress < 1) {
-      const easeOutCubic = (t) => 1 - Math.pow(1 - t, 3);
-      const easedProgress = easeOutCubic(progress);
+            renderer.render(scene, camera);
+        }
 
-      dice.rotation.x = targetRotation.x * easedProgress;
-      dice.rotation.y = targetRotation.y * easedProgress;
-      dice.rotation.z = targetRotation.z * easedProgress;
-    } else {
-      dice.rotation.x = targetRotation.x;
-      dice.rotation.y = targetRotation.y;
-      dice.rotation.z = targetRotation.z;
-      rolling = false;
-    }
-  }
+        document.getElementById('rollButton').addEventListener('click', () => {
+            rolling = true;
+            rollStartTime = performance.now();
 
-  renderer.render(scene, camera);
-}
-renderer.setClearColor(0x000000, 0); // The second parameter (alpha) is set to 0
+            targetRotation.x = Math.random() * Math.PI * 2;
+            targetRotation.y = Math.random() * Math.PI * 2;
+            targetRotation.z = Math.random() * Math.PI * 2;
 
-// Enable shadow rendering
-renderer.shadowMap.enabled = true;
-renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            targetRotation.x += Math.PI * 2 * Math.floor(Math.random() * 3);
+            targetRotation.y += Math.PI * 2 * Math.floor(Math.random() * 3);
+        });
 
-// Make the light cast shadows
-light.castShadow = true;
-
-light.shadow.mapSize.width = 512;  // default is 512
-light.shadow.mapSize.height = 512; // default is 512
-light.shadow.camera.near = 0.5;    // default
-light.shadow.camera.far = 500;     // default
-light.shadow.radius = 8;           // Increase this value for more blur
-
-// Add a plane to receive the shadow
-const planeGeometry = new THREE.PlaneGeometry(10, 10);
-const planeMaterial = new THREE.MeshStandardMaterial({ 
-    color: 0xcccccc, 
-    transparent: true, 
-    opacity: 0 
-});
-const plane = new THREE.Mesh(planeGeometry, planeMaterial);
-plane.rotation.x = -Math.PI / 2;
-plane.position.y = -2;
-plane.receiveShadow = true;
-scene.add(plane);
-
-document.getElementById('rollButton').addEventListener('click', () => {
-  rolling = true;
-  rollStartTime = performance.now();
-
-  const randomIndex = Math.floor(Math.random() * rotations.length);
-  targetRotation = rotations[randomIndex];
-
-  targetRotation.x += Math.PI * 2 * Math.floor(Math.random() * 3);
-  targetRotation.y += Math.PI * 2 * Math.floor(Math.random() * 3);
-});
-// Make the dice cast and receive shadows
-dice.castShadow = true;
-dice.receiveShadow = true;
-// Ensure your light is set up to cast shadows
-light.castShadow = true;
-
-// Make sure your dice is set to cast shadows
-dice.castShadow = true;
-animate();
-</script>
+        animate();
+    </script>
 </body>
 </html>
