@@ -3,29 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>3D Hexagonal Dice</title>
+    <title>D&D Styled Dice</title>
     <style>
         :root {
-            --notion-text-color: #37352f;
-            --notion-accent-color: #9966ff;
-            --dice-color: #7f4ad9;
-            --dice-border: #6b7280;
+            --button-glow: linear-gradient(135deg, #ff00cc, #3333ff, #00ffcc);
+            --dice-color: #323232;
+            --dice-highlight: #444;
+            --text-color: #f4f4f4;
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background-color: #f7f6f3;
+            font-family: 'Georgia', serif;
+            background: radial-gradient(circle at top, #282828, #101010);
+            color: var(--text-color);
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             min-height: 100vh;
             margin: 0;
-            color: var(--notion-text-color);
+            overflow: hidden;
         }
 
         .container {
-            text-align: center;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -34,8 +34,8 @@
 
         .dice {
             position: relative;
-            width: 120px;
-            height: 120px;
+            width: 100px;
+            height: 100px;
             transform-style: preserve-3d;
             transform: rotateX(0deg) rotateY(0deg);
             transition: transform 1s ease-in-out;
@@ -45,52 +45,58 @@
             position: absolute;
             width: 100%;
             height: 100%;
-            background-color: var(--dice-color);
-            border: 2px solid var(--dice-border);
             border-radius: 10px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 2rem;
+            font-size: 1.5rem;
             font-weight: bold;
-            color: #fff;
+            color: var(--text-color);
+            text-align: center;
+            line-height: 100px;
+            /* Add texture with background */
+            background: var(--dice-color);
+            background-image: url('https://www.transparenttextures.com/patterns/asfalt-dark.png');
+            box-shadow: inset 0 2px 4px var(--dice-highlight), 0 6px 12px rgba(0, 0, 0, 0.7);
         }
 
-        /* Position the hexagonal faces */
-        .front  { transform: translateZ(60px); }
-        .back   { transform: rotateY(180deg) translateZ(60px); }
-        .top    { transform: rotateX(90deg) translateZ(60px); }
-        .bottom { transform: rotateX(-90deg) translateZ(60px); }
-        .left   { transform: rotateY(-90deg) translateZ(60px); }
-        .right  { transform: rotateY(90deg) translateZ(60px); }
+        /* Dice Face Positions for a 3D Effect */
+        .front  { transform: translateZ(50px); }
+        .back   { transform: rotateY(180deg) translateZ(50px); }
+        .top    { transform: rotateX(90deg) translateZ(50px); }
+        .bottom { transform: rotateX(-90deg) translateZ(50px); }
+        .left   { transform: rotateY(-90deg) translateZ(50px); }
+        .right  { transform: rotateY(90deg) translateZ(50px); }
 
         button {
-            padding: 10px 20px;
-            background-color: var(--notion-accent-color);
-            color: #fff;
+            padding: 15px 30px;
+            font-size: 18px;
+            color: white;
+            background: var(--button-glow);
+            background-size: 200% 200%;
             border: none;
-            border-radius: 5px;
-            font-size: 16px;
+            border-radius: 10px;
+            text-shadow: 0 0 8px rgba(255, 255, 255, 0.6);
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.4);
             cursor: pointer;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            transition: background-color 0.3s, transform 0.1s;
+            animation: glow 3s infinite linear;
         }
 
         button:hover {
-            background-color: #7f4ad9;
+            filter: brightness(1.2);
         }
 
         button:active {
             transform: scale(0.95);
         }
 
+        @keyframes glow {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
         @media (prefers-color-scheme: dark) {
             body {
-                background-color: #2f3437;
+                background: radial-gradient(circle at top, #101010, #000);
                 color: #fff;
-            }
-            .dice-face {
-                border-color: #4c4c4c;
             }
         }
     </style>
@@ -98,14 +104,15 @@
 <body>
     <div class="container">
         <div class="dice" id="dice">
+            <!-- 20-sided die numbers -->
             <div class="dice-face front">1</div>
-            <div class="dice-face back">2</div>
-            <div class="dice-face top">3</div>
-            <div class="dice-face bottom">4</div>
+            <div class="dice-face back">20</div>
+            <div class="dice-face top">8</div>
+            <div class="dice-face bottom">12</div>
             <div class="dice-face left">5</div>
-            <div class="dice-face right">6</div>
+            <div class="dice-face right">16</div>
         </div>
-        <button id="rollButton">Roll Dice</button>
+        <button id="rollButton">Roll the Dice!</button>
     </div>
 
     <script>
@@ -116,11 +123,11 @@
         let currentY = 0;
 
         function rollDice() {
-            // Generate random rotations
-            const randomX = Math.floor(Math.random() * 4 + 1) * 90; // Random multiple of 90
-            const randomY = Math.floor(Math.random() * 4 + 1) * 90;
+            // Generate random rotations for a D20
+            const randomX = Math.floor(Math.random() * 8 + 1) * 45; // Multiple of 45 for smoothness
+            const randomY = Math.floor(Math.random() * 8 + 1) * 45;
 
-            // Update the rotation state
+            // Update rotation state
             currentX += randomX;
             currentY += randomY;
 
