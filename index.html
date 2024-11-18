@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>D20 Dice Roll with FBX Model - Enhanced Visibility, Lighting, and Depth of Field</title>
+<title>D20 Dice Roll with FBX Model - Enhanced Visibility and Lighting</title>
 <style>
 body, html {
     margin: 0;
@@ -92,12 +92,9 @@ body, html {
 <script src="https://cdn.jsdelivr.net/npm/fflate@0.7.4/umd/index.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/loaders/FBXLoader.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/postprocessing/EffectComposer.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/postprocessing/RenderPass.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/postprocessing/BokehPass.js"></script>
 <script>
 const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
+const camera = new THREE.PerspectiveCamera(75, 300 / 300, 0.1, 1000);
 const renderer = new THREE.WebGLRenderer({
     canvas: document.getElementById('diceCanvas'),
     alpha: true,
@@ -105,35 +102,31 @@ const renderer = new THREE.WebGLRenderer({
 });
 renderer.setSize(300, 300);
 renderer.setClearColor(0x000000, 0);
-renderer.setPixelRatio(window.devicePixelRatio * 2); // Increase sharpness
 
 // Enhanced lighting setup
-const mainLight = new THREE.DirectionalLight(0xffffff, 1.2);
+const mainLight = new THREE.DirectionalLight(0xffffff, 0.9);
 mainLight.position.set(5, 5, 5);
 scene.add(mainLight);
 
-const fillLight = new THREE.DirectionalLight(0xffffff, 1.2);
+const fillLight = new THREE.DirectionalLight(0xffffff, 0.9);
 fillLight.position.set(-5, 0, 5);
 scene.add(fillLight);
 
-const backLight = new THREE.DirectionalLight(0xffffff, 1);
+const backLight = new THREE.DirectionalLight(0xffffff, 0.8);
 backLight.position.set(0, -5, -5);
 scene.add(backLight);
 
-const ambientLight = new THREE.AmbientLight(0x404040, 0.7);
+const ambientLight = new THREE.AmbientLight(0x404040, 0.5);
 scene.add(ambientLight);
 
 let dice;
 const loader = new THREE.FBXLoader();
 
 // Create a custom material with enhanced visibility
-let diceMaterial = new THREE.MeshPhysicalMaterial({
+let diceMaterial = new THREE.MeshPhongMaterial({
     color: 0x9DBF9E,
-    metalness: 0.5,
-    roughness: 0.2,
-    clearcoat: 1.0,
-    clearcoatRoughness: 0.1,
-    reflectivity: 1.0,
+    specular: 0x050505,
+    shininess: 100,
     emissive: 0x331111,
     emissiveIntensity: 0.1
 });
@@ -142,8 +135,8 @@ loader.load(
     'dice.fbx',
     (object) => {
         dice = object;
-        dice.scale.set(0.015, 0.015, 0.015); // Adjust scale to fit in the smaller container
-        dice.position.set(0, 0, 0);
+        dice.scale.set(0.02, 0.02, 0.02);
+        dice.position.set(0, 1.03, 0);
 
         dice.traverse((child) => {
             if (child.isMesh) {
@@ -154,8 +147,6 @@ loader.load(
         });
 
         scene.add(dice);
-        // Render the scene immediately after adding the dice
-        composer.render();
     },
     (xhr) => {
         console.log((xhr.loaded / xhr.total * 100) + '% loaded');
@@ -165,34 +156,15 @@ loader.load(
     }
 );
 
-camera.position.z = 2.5; // Adjust camera position to make the dice more visible
+camera.position.z = 5;
 
-// Enable shadow rendering with higher quality
+// Enable shadow rendering
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
 mainLight.castShadow = true;
 fillLight.castShadow = true;
 backLight.castShadow = true;
-
-mainLight.shadow.mapSize.width = 2048;
-mainLight.shadow.mapSize.height = 2048;
-mainLight.shadow.camera.near = 0.5;
-mainLight.shadow.camera.far = 500;
-
-// Set up depth of field effect
-const composer = new THREE.EffectComposer(renderer);
-const renderPass = new THREE.RenderPass(scene, camera);
-composer.addPass(renderPass);
-
-const bokehPass = new THREE.BokehPass(scene, camera, {
-    focus: 2.5,
-    aperture: 0.005,
-    maxblur: 0.01,
-    width: 300,
-    height: 300
-});
-composer.addPass(bokehPass);
 
 let rolling = false;
 let targetRotation = { x: 0, y: 0, z: 0 };
@@ -213,19 +185,15 @@ function animate(time) {
             dice.rotation.x = targetRotation.x * easedProgress;
             dice.rotation.y = targetRotation.y * easedProgress;
             dice.rotation.z = targetRotation.z * easedProgress;
-
-            // Adjust focus based on dice rotation
-            bokehPass.uniforms.focus.value = 2.5 + Math.sin(easedProgress * Math.PI) * 0.5;
         } else {
             dice.rotation.x = targetRotation.x;
             dice.rotation.y = targetRotation.y;
             dice.rotation.z = targetRotation.z;
             rolling = false;
-            bokehPass.uniforms.focus.value = 2.5;
         }
     }
 
-    composer.render();
+    renderer.render(scene, camera);
 }
 
 document.getElementById('rollButton').addEventListener('click', () => {
@@ -245,7 +213,6 @@ document.getElementById('rollButton').addEventListener('click', () => {
 function changeDiceColor(color) {
     if (dice) {
         diceMaterial.color.setHex(color);
-        composer.render(); // Re-render the scene when color changes
     }
 }
 
