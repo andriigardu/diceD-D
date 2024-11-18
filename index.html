@@ -104,62 +104,77 @@
 
         scene.add(dice);
 
-        // Predefined D20 rotations for each face (aligning faces toward the camera)
+       // Predefined D20 rotations for each face (aligning faces toward the camera)
 const rotations = [
-  { x: 0, y: 0, z: 0 }, // Face 1
-  { x: Math.PI / 5, y: Math.PI / 4, z: 0 }, // Face 2
-  { x: -Math.PI / 5, y: -Math.PI / 4, z: Math.PI / 10 }, // Face 3
-  { x: Math.PI / 3, y: Math.PI / 3, z: 0 }, // Face 4
-  { x: Math.PI / 7, y: -Math.PI / 5, z: Math.PI / 8 }, // Face 5
-  { x: -Math.PI / 3, y: Math.PI / 6, z: Math.PI / 12 }, // Face 6
-  { x: Math.PI / 4, y: -Math.PI / 3, z: -Math.PI / 6 }, // Face 7
-  { x: -Math.PI / 6, y: Math.PI / 2, z: Math.PI / 15 }, // Face 8
-  { x: Math.PI / 2, y: -Math.PI / 4, z: Math.PI / 20 }, // Face 9
-  { x: -Math.PI / 4, y: Math.PI / 3, z: -Math.PI / 8 }, // Face 10
-  { x: Math.PI / 6, y: -Math.PI / 2, z: Math.PI / 6 }, // Face 11
-  { x: -Math.PI / 2, y: Math.PI / 5, z: -Math.PI / 10 }, // Face 12
-  { x: Math.PI / 3, y: -Math.PI / 6, z: Math.PI / 4 }, // Face 13
-  { x: -Math.PI / 5, y: Math.PI / 4, z: -Math.PI / 3 }, // Face 14
-  { x: Math.PI / 4, y: -Math.PI / 3, z: Math.PI / 5 }, // Face 15
-  { x: -Math.PI / 3, y: Math.PI / 6, z: -Math.PI / 4 }, // Face 16
-  { x: Math.PI / 5, y: -Math.PI / 2, z: Math.PI / 8 }, // Face 17
-  { x: -Math.PI / 4, y: Math.PI / 3, z: -Math.PI / 6 }, // Face 18
-  { x: Math.PI / 6, y: -Math.PI / 4, z: Math.PI / 3 }, // Face 19
-  { x: -Math.PI / 2, y: Math.PI / 5, z: -Math.PI / 5 }  // Face 20
+    { x: 0, y: 0, z: 0 },                           // Face 1
+    { x: 0, y: 2 * Math.PI / 5, z: 0 },             // Face 2
+    { x: 2 * Math.PI / 5, y: Math.PI / 5, z: 0 },   // Face 3
+    { x: -2 * Math.PI / 5, y: 3 * Math.PI / 5, z: 0 }, // Face 4
+    { x: Math.PI, y: 0, z: 0 },                     // Face 5
+    { x: 2 * Math.PI / 5, y: -Math.PI / 5, z: 0 },  // Face 6
+    { x: -2 * Math.PI / 5, y: -3 * Math.PI / 5, z: 0 }, // Face 7
+    { x: 0, y: -2 * Math.PI / 5, z: 0 },            // Face 8
+    { x: -2 * Math.PI / 5, y: Math.PI / 5, z: 0 },  // Face 9
+    { x: 2 * Math.PI / 5, y: 3 * Math.PI / 5, z: 0 }, // Face 10
+    { x: 0, y: 4 * Math.PI / 5, z: 0 },             // Face 11
+    { x: 4 * Math.PI / 5, y: 0, z: 0 },             // Face 12
+    { x: -4 * Math.PI / 5, y: 2 * Math.PI / 5, z: 0 }, // Face 13
+    { x: 4 * Math.PI / 5, y: 2 * Math.PI / 5, z: 0 }, // Face 14
+    { x: -4 * Math.PI / 5, y: -2 * Math.PI / 5, z: 0 }, // Face 15
+    { x: 4 * Math.PI / 5, y: -2 * Math.PI / 5, z: 0 }, // Face 16
+    { x: 0, y: -4 * Math.PI / 5, z: 0 },            // Face 17
+    { x: 2 * Math.PI / 5, y: -3 * Math.PI / 5, z: 0 }, // Face 18
+    { x: -2 * Math.PI / 5, y: -Math.PI / 5, z: 0 }, // Face 19
+    { x: -4 * Math.PI / 5, y: 0, z: 0 }             // Face 20
 ];
 
-        // Smooth rolling animation
-        let rolling = false;
-        let targetRotation = { x: 0, y: 0, z: 0 };
+// Smooth rolling animation
+let rolling = false;
+let targetRotation = { x: 0, y: 0, z: 0 };
+let rollDuration = 2000; // 2 seconds
+let rollStartTime;
 
-        function animate() {
-            requestAnimationFrame(animate);
+function animate(time) {
+    requestAnimationFrame(animate);
 
-            if (rolling) {
-                dice.rotation.x += (targetRotation.x - dice.rotation.x) * 0.1;
-                dice.rotation.y += (targetRotation.y - dice.rotation.y) * 0.1;
-                dice.rotation.z += (targetRotation.z - dice.rotation.z) * 0.1;
+    if (rolling) {
+        const elapsedTime = time - rollStartTime;
+        const progress = Math.min(elapsedTime / rollDuration, 1);
+        
+        if (progress < 1) {
+            // Easing function for smooth deceleration
+            const easeOutCubic = (t) => 1 - Math.pow(1 - t, 3);
+            const easedProgress = easeOutCubic(progress);
 
-                if (
-                    Math.abs(targetRotation.x - dice.rotation.x) < 0.01 &&
-                    Math.abs(targetRotation.y - dice.rotation.y) < 0.01 &&
-                    Math.abs(targetRotation.z - dice.rotation.z) < 0.01
-                ) {
-                    rolling = false;
-                }
-            }
-
-            renderer.render(scene, camera);
+            dice.rotation.x = targetRotation.x * easedProgress;
+            dice.rotation.y = targetRotation.y * easedProgress;
+            dice.rotation.z = targetRotation.z * easedProgress;
+        } else {
+            dice.rotation.x = targetRotation.x;
+            dice.rotation.y = targetRotation.y;
+            dice.rotation.z = targetRotation.z;
+            rolling = false;
         }
-        animate();
+    }
 
-        // Roll the dice
-        document.getElementById('rollButton').addEventListener('click', () => {
-            rolling = true;
+    renderer.render(scene, camera);
+}
 
-            // Randomly select a target rotation (ensuring a face aligns toward the camera)
-            const randomIndex = Math.floor(Math.random() * rotations.length);
-            targetRotation = rotations[randomIndex];
+// Roll the dice
+document.getElementById('rollButton').addEventListener('click', () => {
+    rolling = true;
+    rollStartTime = performance.now();
+
+    // Randomly select a target rotation (ensuring a face aligns toward the camera)
+    const randomIndex = Math.floor(Math.random() * rotations.length);
+    targetRotation = rotations[randomIndex];
+
+    // Add some random spins for visual effect
+    targetRotation.x += Math.PI * 2 * Math.floor(Math.random() * 3);
+    targetRotation.y += Math.PI * 2 * Math.floor(Math.random() * 3);
+});
+
+animate();
         });
     </script>
 </body>
