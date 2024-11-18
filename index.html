@@ -80,19 +80,19 @@
     renderer.setClearColor(0x000000, 0);
 
     // Enhanced lighting setup
-    const mainLight = new THREE.DirectionalLight(0xffffff, 2);
+    const mainLight = new THREE.DirectionalLight(0xffffff, 1.5);
     mainLight.position.set(5, 5, 5);
     scene.add(mainLight);
 
-    const fillLight = new THREE.DirectionalLight(0xffffff, 1.5);
+    const fillLight = new THREE.DirectionalLight(0xffffff, 1);
     fillLight.position.set(-5, 0, 5);
     scene.add(fillLight);
 
-    const backLight = new THREE.DirectionalLight(0xffffff, 1);
+    const backLight = new THREE.DirectionalLight(0xffffff, 0.8);
     backLight.position.set(0, -5, -5);
     scene.add(backLight);
 
-    const ambientLight = new THREE.AmbientLight(0x404040, 1);
+    const ambientLight = new THREE.AmbientLight(0x404040, 0.7);
     scene.add(ambientLight);
 
     let dice;
@@ -100,11 +100,11 @@
 
     // Create a custom material with enhanced visibility
     const diceMaterial = new THREE.MeshPhongMaterial({
-        color: 0xFF6B6B, // Bright Coral color
+        color: 0x9DBF9E, // Bright Coral color
         specular: 0x050505,
         shininess: 100,
         emissive: 0x331111,
-        emissiveIntensity: 0.2
+        emissiveIntensity: 0.1
     });
 
     loader.load(
