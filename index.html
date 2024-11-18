@@ -147,9 +147,19 @@ renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 // Make the light cast shadows
 light.castShadow = true;
 
+light.shadow.mapSize.width = 512;  // default is 512
+light.shadow.mapSize.height = 512; // default is 512
+light.shadow.camera.near = 0.5;    // default
+light.shadow.camera.far = 500;     // default
+light.shadow.radius = 8;           // Increase this value for more blur
+
 // Add a plane to receive the shadow
 const planeGeometry = new THREE.PlaneGeometry(10, 10);
-const planeMaterial = new THREE.MeshStandardMaterial({ color: 0xcccccc });
+const planeMaterial = new THREE.MeshStandardMaterial({ 
+    color: 0xcccccc, 
+    transparent: true, 
+    opacity: 0 
+});
 const plane = new THREE.Mesh(planeGeometry, planeMaterial);
 plane.rotation.x = -Math.PI / 2;
 plane.position.y = -2;
