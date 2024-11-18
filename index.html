@@ -163,7 +163,7 @@ loader.load(
     }
 );
 
-camera.position.z = 4; // Adjust camera position for the smaller container
+camera.position.z = 3; // Adjust camera position to make the dice more visible
 
 // Enable shadow rendering with higher quality
 renderer.shadowMap.enabled = true;
@@ -184,7 +184,7 @@ const renderPass = new THREE.RenderPass(scene, camera);
 composer.addPass(renderPass);
 
 const bokehPass = new THREE.BokehPass(scene, camera, {
-    focus: 4,
+    focus: 3,
     aperture: 0.005,
     maxblur: 0.01,
     width: 300,
@@ -213,13 +213,13 @@ function animate(time) {
             dice.rotation.z = targetRotation.z * easedProgress;
 
             // Adjust focus based on dice rotation
-            bokehPass.uniforms.focus.value = 4 + Math.sin(easedProgress * Math.PI) * 1;
+            bokehPass.uniforms.focus.value = 3 + Math.sin(easedProgress * Math.PI) * 0.5;
         } else {
             dice.rotation.x = targetRotation.x;
             dice.rotation.y = targetRotation.y;
             dice.rotation.z = targetRotation.z;
             rolling = false;
-            bokehPass.uniforms.focus.value = 4;
+            bokehPass.uniforms.focus.value = 3;
         }
     }
 
