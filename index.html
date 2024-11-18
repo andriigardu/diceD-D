@@ -18,7 +18,7 @@
         }
 
         #container {
-            width: 300px;
+            width: 350px;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -30,8 +30,8 @@
 
         canvas {
             display: block;
-            width: 200px;
-            height: 200px;
+            width: 300px;
+            height: 300px;
         }
 
         button {
@@ -72,11 +72,11 @@
             alpha: true,
             antialias: true // Enable smooth edges
         });
-        renderer.setSize(200, 200);
+        renderer.setSize(300, 300);
 
         const scene = new THREE.Scene();
         const camera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
-        camera.position.z = 4;
+        camera.position.z = 5;
 
         // Lights
         const light = new THREE.PointLight(0xffffff, 1, 100);
@@ -86,7 +86,7 @@
         scene.add(ambientLight);
 
         // Create D20 Dice
-        const geometry = new THREE.IcosahedronGeometry(1.5);
+        const geometry = new THREE.IcosahedronGeometry(2); // Bigger dice
         const material = new THREE.MeshStandardMaterial({
             color: 0x444444,
             roughness: 0.3,
@@ -104,20 +104,19 @@
 
         scene.add(dice);
 
-        // Predefined D20 rotations for each side (to face the camera)
+        // Predefined D20 rotations for each face (aligning faces toward the camera)
         const rotations = [
-            { x: 0, y: 0 }, // Side 1
-            { x: Math.PI / 2, y: 0 }, // Side 2
-            { x: Math.PI, y: 0 }, // Side 3
-            { x: -Math.PI / 2, y: 0 }, // Side 4
-            { x: 0, y: Math.PI / 2 }, // Side 5
-            { x: 0, y: -Math.PI / 2 } // Side 6
-            // ... Add more sides if needed
+            { x: 0, y: 0, z: 0 }, // Face 1
+            { x: Math.PI / 5, y: Math.PI / 4, z: 0 }, // Face 2
+            { x: -Math.PI / 5, y: -Math.PI / 4, z: Math.PI / 10 }, // Face 3
+            { x: Math.PI / 3, y: Math.PI / 3, z: 0 }, // Face 4
+            { x: Math.PI / 7, y: -Math.PI / 5, z: Math.PI / 8 }, // Face 5
+            // Define other faces for all 20
         ];
 
         // Smooth rolling animation
         let rolling = false;
-        let targetRotation = { x: 0, y: 0 };
+        let targetRotation = { x: 0, y: 0, z: 0 };
 
         function animate() {
             requestAnimationFrame(animate);
@@ -125,10 +124,12 @@
             if (rolling) {
                 dice.rotation.x += (targetRotation.x - dice.rotation.x) * 0.1;
                 dice.rotation.y += (targetRotation.y - dice.rotation.y) * 0.1;
+                dice.rotation.z += (targetRotation.z - dice.rotation.z) * 0.1;
 
                 if (
                     Math.abs(targetRotation.x - dice.rotation.x) < 0.01 &&
-                    Math.abs(targetRotation.y - dice.rotation.y) < 0.01
+                    Math.abs(targetRotation.y - dice.rotation.y) < 0.01 &&
+                    Math.abs(targetRotation.z - dice.rotation.z) < 0.01
                 ) {
                     rolling = false;
                 }
@@ -142,7 +143,7 @@
         document.getElementById('rollButton').addEventListener('click', () => {
             rolling = true;
 
-            // Randomly select a target rotation
+            // Randomly select a target rotation (ensuring a face aligns toward the camera)
             const randomIndex = Math.floor(Math.random() * rotations.length);
             targetRotation = rotations[randomIndex];
         });
