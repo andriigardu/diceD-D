@@ -17,8 +17,8 @@ body, html {
 }
 #renderContainer {
     position: relative;
-    width: 600px;
-    height: 600px;
+    width: 300px;
+    height: 300px;
     border: 1px solid #d0d0d0;
     border-radius: 10px;
     overflow: hidden;
@@ -97,15 +97,15 @@ body, html {
 <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/postprocessing/BokehPass.js"></script>
 <script>
 const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera(75, 600 / 600, 0.1, 1000);
+const camera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
 const renderer = new THREE.WebGLRenderer({
     canvas: document.getElementById('diceCanvas'),
     alpha: true,
     antialias: true
 });
-renderer.setSize(600, 600);
+renderer.setSize(300, 300);
 renderer.setClearColor(0x000000, 0);
-renderer.setPixelRatio(window.devicePixelRatio);
+renderer.setPixelRatio(window.devicePixelRatio * 2); // Increase sharpness
 
 // Enhanced lighting setup
 const mainLight = new THREE.DirectionalLight(0xffffff, 1.2);
@@ -142,8 +142,8 @@ loader.load(
     'dice.fbx',
     (object) => {
         dice = object;
-        dice.scale.set(0.02, 0.02, 0.02);
-        dice.position.set(0, 1.03, 0);
+        dice.scale.set(0.015, 0.015, 0.015); // Adjust scale to fit in the smaller container
+        dice.position.set(0, 0, 0);
 
         dice.traverse((child) => {
             if (child.isMesh) {
@@ -163,7 +163,7 @@ loader.load(
     }
 );
 
-camera.position.z = 5;
+camera.position.z = 4; // Adjust camera position for the smaller container
 
 // Enable shadow rendering with higher quality
 renderer.shadowMap.enabled = true;
@@ -184,11 +184,11 @@ const renderPass = new THREE.RenderPass(scene, camera);
 composer.addPass(renderPass);
 
 const bokehPass = new THREE.BokehPass(scene, camera, {
-    focus: 5,
-    aperture: 0.01,
+    focus: 4,
+    aperture: 0.005,
     maxblur: 0.01,
-    width: 600,
-    height: 600
+    width: 300,
+    height: 300
 });
 composer.addPass(bokehPass);
 
@@ -213,13 +213,13 @@ function animate(time) {
             dice.rotation.z = targetRotation.z * easedProgress;
 
             // Adjust focus based on dice rotation
-            bokehPass.uniforms.focus.value = 5 + Math.sin(easedProgress * Math.PI) * 2;
+            bokehPass.uniforms.focus.value = 4 + Math.sin(easedProgress * Math.PI) * 1;
         } else {
             dice.rotation.x = targetRotation.x;
             dice.rotation.y = targetRotation.y;
             dice.rotation.z = targetRotation.z;
             rolling = false;
-            bokehPass.uniforms.focus.value = 5;
+            bokehPass.uniforms.focus.value = 4;
         }
     }
 
