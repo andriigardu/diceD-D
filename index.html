@@ -225,69 +225,74 @@ function animate(time) {
     renderer.render(scene, camera);
 }
 
-// Complete D20 face set - covers all possible orientations
-const phi = (1 + Math.sqrt(5)) / 2; // Golden ratio for icosahedron
-const angle1 = Math.atan(1 / phi); // ~31.7 degrees
-const angle2 = Math.atan(phi); // ~58.3 degrees
+// Calculate 20 face rotations based on icosahedron symmetry
+// Starting from your model's natural "face-forward" orientation
+function generateD20Faces() {
+    const faces = [];
+    const phi = (1 + Math.sqrt(5)) / 2; // Golden ratio
+    
+    // Your model's natural face-forward is approximately this tilt
+    const baseTilt = -0.4; // Slight downward tilt for face-forward
+    
+    // 5 faces around the top ring
+    for (let i = 0; i < 5; i++) {
+        faces.push({
+            x: baseTilt,
+            y: (Math.PI * 2 / 5) * i,
+            z: 0
+        });
+    }
+    
+    // 5 faces around upper-middle ring
+    for (let i = 0; i < 5; i++) {
+        faces.push({
+            x: baseTilt + 1.107,
+            y: (Math.PI * 2 / 5) * i + Math.PI / 5,
+            z: 0
+        });
+    }
+    
+    // 5 faces around lower-middle ring
+    for (let i = 0; i < 5; i++) {
+        faces.push({
+            x: baseTilt + Math.PI - 1.107,
+            y: (Math.PI * 2 / 5) * i,
+            z: 0
+        });
+    }
+    
+    // 5 faces around bottom ring
+    for (let i = 0; i < 5; i++) {
+        faces.push({
+            x: baseTilt + Math.PI,
+            y: (Math.PI * 2 / 5) * i + Math.PI / 5,
+            z: 0
+        });
+    }
+    
+    return faces;
+}
 
-const d20Faces = [
-    // Top ring (5 faces)
-    { x: -angle1, y: 0, z: 0 },
-    { x: -angle1, y: Math.PI * 0.4, z: 0 },
-    { x: -angle1, y: Math.PI * 0.8, z: 0 },
-    { x: -angle1, y: Math.PI * 1.2, z: 0 },
-    { x: -angle1, y: Math.PI * 1.6, z: 0 },
-    
-    // Upper middle ring (5 faces)
-    { x: angle1, y: Math.PI * 0.2, z: 0 },
-    { x: angle1, y: Math.PI * 0.6, z: 0 },
-    { x: angle1, y: Math.PI, z: 0 },
-    { x: angle1, y: Math.PI * 1.4, z: 0 },
-    { x: angle1, y: Math.PI * 1.8, z: 0 },
-    
-    // Lower middle ring (5 faces)
-    { x: Math.PI - angle1, y: 0, z: 0 },
-    { x: Math.PI - angle1, y: Math.PI * 0.4, z: 0 },
-    { x: Math.PI - angle1, y: Math.PI * 0.8, z: 0 },
-    { x: Math.PI - angle1, y: Math.PI * 1.2, z: 0 },
-    { x: Math.PI - angle1, y: Math.PI * 1.6, z: 0 },
-    
-    // Bottom ring (5 faces)
-    { x: Math.PI + angle1, y: Math.PI * 0.2, z: 0 },
-    { x: Math.PI + angle1, y: Math.PI * 0.6, z: 0 },
-    { x: Math.PI + angle1, y: Math.PI, z: 0 },
-    { x: Math.PI + angle1, y: Math.PI * 1.4, z: 0 },
-    { x: Math.PI + angle1, y: Math.PI * 1.8, z: 0 }
-];
-    
+const d20Faces = generateD20Faces();
+
 document.getElementById('rollButton').addEventListener('click', () => {
-    if (dice) {
+    if (dice && !rolling) {
         rolling = true;
         rollStartTime = performance.now();
         
-        // Pick a random face from the 20 possible faces
         const randomFace = d20Faces[Math.floor(Math.random() * 20)];
+        const extraSpins = 3 + Math.floor(Math.random() * 2);
         
-        // Calculate how many full spins to add for drama
-        const extraSpins = 2 + Math.floor(Math.random() * 3); // 2-4 full spins
-        
-        // CRITICAL: Store the CURRENT rotation as the starting point
         const startRotation = {
             x: dice.rotation.x,
             y: dice.rotation.y,
             z: dice.rotation.z
         };
         
-        // Target is the FINAL ABSOLUTE position (not relative)
-        targetRotation.x = randomFace.x;
-        targetRotation.y = randomFace.y;
+        targetRotation.x = randomFace.x + (Math.PI * 2 * extraSpins);
+        targetRotation.y = randomFace.y + (Math.PI * 2 * extraSpins);
         targetRotation.z = randomFace.z;
         
-        // Add dramatic spins FROM current position TO target
-        targetRotation.x += (Math.PI * 2 * extraSpins);
-        targetRotation.y += (Math.PI * 2 * extraSpins);
-        
-        // Store start for the animation
         dice.userData.startRotation = startRotation;
     }
 });
