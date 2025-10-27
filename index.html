@@ -168,13 +168,28 @@ loader.load(
 
 camera.position.z = 5;
 
-// Enable shadow rendering
+// Enable shadow rendering with MUCH softer settings
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
+// Configure each light's shadow properties for softness
 mainLight.castShadow = true;
+mainLight.shadow.mapSize.width = 2048;  // Higher resolution
+mainLight.shadow.mapSize.height = 2048;
+mainLight.shadow.camera.near = 0.5;
+mainLight.shadow.camera.far = 50;
+mainLight.shadow.bias = -0.0001;
+mainLight.shadow.radius = 8;  // Blur radius for soft shadows
+
 fillLight.castShadow = true;
+fillLight.shadow.mapSize.width = 2048;
+fillLight.shadow.mapSize.height = 2048;
+fillLight.shadow.radius = 8;
+
 backLight.castShadow = true;
+backLight.shadow.mapSize.width = 2048;
+backLight.shadow.mapSize.height = 2048;
+backLight.shadow.radius = 8;
 
 let rolling = false;
 let targetRotation = { x: 0, y: 0, z: 0 };
@@ -206,29 +221,39 @@ function animate(time) {
     renderer.render(scene, camera);
 }
 
-// Accurate D20 (icosahedron) face orientations
-// Based on golden ratio and proper 3D geometry
+// Complete D20 face set - covers all possible orientations
+const phi = (1 + Math.sqrt(5)) / 2; // Golden ratio for icosahedron
+const angle1 = Math.atan(1 / phi); // ~31.7 degrees
+const angle2 = Math.atan(phi); // ~58.3 degrees
+
 const d20Faces = [
-    { x: 0, y: 0, z: 0 },
-    { x: 0, y: Math.PI * 2/5, z: 0 },
-    { x: 0, y: Math.PI * 4/5, z: 0 },
-    { x: 0, y: Math.PI * 6/5, z: 0 },
-    { x: 0, y: Math.PI * 8/5, z: 0 },
-    { x: Math.PI, y: 0, z: 0 },
-    { x: Math.PI, y: Math.PI * 2/5, z: 0 },
-    { x: Math.PI, y: Math.PI * 4/5, z: 0 },
-    { x: Math.PI, y: Math.PI * 6/5, z: 0 },
-    { x: Math.PI, y: Math.PI * 8/5, z: 0 },
-    { x: 1.017, y: 0, z: 0 },
-    { x: 1.017, y: Math.PI * 2/5, z: 0 },
-    { x: 1.017, y: Math.PI * 4/5, z: 0 },
-    { x: 1.017, y: Math.PI * 6/5, z: 0 },
-    { x: 1.017, y: Math.PI * 8/5, z: 0 },
-    { x: -1.017, y: Math.PI/5, z: 0 },
-    { x: -1.017, y: Math.PI * 3/5, z: 0 },
-    { x: -1.017, y: Math.PI, z: 0 },
-    { x: -1.017, y: Math.PI * 7/5, z: 0 },
-    { x: -1.017, y: Math.PI * 9/5, z: 0 }
+    // Top ring (5 faces)
+    { x: -angle1, y: 0, z: 0 },
+    { x: -angle1, y: Math.PI * 0.4, z: 0 },
+    { x: -angle1, y: Math.PI * 0.8, z: 0 },
+    { x: -angle1, y: Math.PI * 1.2, z: 0 },
+    { x: -angle1, y: Math.PI * 1.6, z: 0 },
+    
+    // Upper middle ring (5 faces)
+    { x: angle1, y: Math.PI * 0.2, z: 0 },
+    { x: angle1, y: Math.PI * 0.6, z: 0 },
+    { x: angle1, y: Math.PI, z: 0 },
+    { x: angle1, y: Math.PI * 1.4, z: 0 },
+    { x: angle1, y: Math.PI * 1.8, z: 0 },
+    
+    // Lower middle ring (5 faces)
+    { x: Math.PI - angle1, y: 0, z: 0 },
+    { x: Math.PI - angle1, y: Math.PI * 0.4, z: 0 },
+    { x: Math.PI - angle1, y: Math.PI * 0.8, z: 0 },
+    { x: Math.PI - angle1, y: Math.PI * 1.2, z: 0 },
+    { x: Math.PI - angle1, y: Math.PI * 1.6, z: 0 },
+    
+    // Bottom ring (5 faces)
+    { x: Math.PI + angle1, y: Math.PI * 0.2, z: 0 },
+    { x: Math.PI + angle1, y: Math.PI * 0.6, z: 0 },
+    { x: Math.PI + angle1, y: Math.PI, z: 0 },
+    { x: Math.PI + angle1, y: Math.PI * 1.4, z: 0 },
+    { x: Math.PI + angle1, y: Math.PI * 1.8, z: 0 }
 ];
     
 document.getElementById('rollButton').addEventListener('click', () => {
