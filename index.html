@@ -135,10 +135,11 @@ const loader = new THREE.FBXLoader();
 // Create a custom material with enhanced visibility
 let diceMaterial = new THREE.MeshPhongMaterial({
     color: 0x9DBF9E,
-    specular: 0x050505,
-    shininess: 100,
-    emissive: 0x331111,
-    emissiveIntensity: 0.1
+    specular: 0x444444,  // Increased for more shine
+    shininess: 80,
+    emissive: 0x111111,
+    emissiveIntensity: 0.05,
+    flatShading: false  // Smooth shading for glossiness
 });
 
 loader.load(
@@ -198,26 +199,29 @@ let rollStartTime;
 
 function animate(time) {
     requestAnimationFrame(animate);
-
+    
     if (rolling && dice) {
         const elapsedTime = time - rollStartTime;
         const progress = Math.min(elapsedTime / rollDuration, 1);
-
+        
         if (progress < 1) {
             const easeOutCubic = (t) => 1 - Math.pow(1 - t, 3);
             const easedProgress = easeOutCubic(progress);
-
-            dice.rotation.x = targetRotation.x * easedProgress;
-            dice.rotation.y = targetRotation.y * easedProgress;
-            dice.rotation.z = targetRotation.z * easedProgress;
+            
+            const start = dice.userData.startRotation;
+            
+            dice.rotation.x = start.x + (targetRotation.x - start.x) * easedProgress;
+            dice.rotation.y = start.y + (targetRotation.y - start.y) * easedProgress;
+            dice.rotation.z = start.z + (targetRotation.z - start.z) * easedProgress;
         } else {
-            dice.rotation.x = targetRotation.x;
-            dice.rotation.y = targetRotation.y;
-            dice.rotation.z = targetRotation.z;
+            // SNAP to exact final position (modulo to clean angle)
+            dice.rotation.x = targetRotation.x % (Math.PI * 2);
+            dice.rotation.y = targetRotation.y % (Math.PI * 2);
+            dice.rotation.z = targetRotation.z % (Math.PI * 2);
             rolling = false;
         }
     }
-
+    
     renderer.render(scene, camera);
 }
 
@@ -264,12 +268,27 @@ document.getElementById('rollButton').addEventListener('click', () => {
         // Pick a random face from the 20 possible faces
         const randomFace = d20Faces[Math.floor(Math.random() * 20)];
         
-        // Add multiple full rotations for dramatic rolling effect
+        // Calculate how many full spins to add for drama
         const extraSpins = 2 + Math.floor(Math.random() * 3); // 2-4 full spins
         
-        targetRotation.x = randomFace.x + (Math.PI * 2 * extraSpins);
-        targetRotation.y = randomFace.y + (Math.PI * 2 * extraSpins);
-        targetRotation.z = randomFace.z + (Math.PI * 2 * extraSpins);
+        // CRITICAL: Store the CURRENT rotation as the starting point
+        const startRotation = {
+            x: dice.rotation.x,
+            y: dice.rotation.y,
+            z: dice.rotation.z
+        };
+        
+        // Target is the FINAL ABSOLUTE position (not relative)
+        targetRotation.x = randomFace.x;
+        targetRotation.y = randomFace.y;
+        targetRotation.z = randomFace.z;
+        
+        // Add dramatic spins FROM current position TO target
+        targetRotation.x += (Math.PI * 2 * extraSpins);
+        targetRotation.y += (Math.PI * 2 * extraSpins);
+        
+        // Store start for the animation
+        dice.userData.startRotation = startRotation;
     }
 });
 
