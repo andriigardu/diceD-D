@@ -82,6 +82,7 @@ body, html {
 <body>
 <div id="renderContainer">
     <canvas id="diceCanvas"></canvas>
+    <button id="calibrateButton" style="position: absolute; top: 10px; right: 10px; padding: 5px 10px; font-size: 12px; background: #4FC3F7; color: white; border: none; border-radius: 3px; cursor: pointer;">Calibrate</button>
     <button id="rollButton">Roll</button>
     <div id="colorSwitcher">
         <div class="colorDot" style="background-color: #9DBF9E;" onclick="changeDiceColor(0x9DBF9E)"></div>
@@ -225,57 +226,54 @@ function animate(time) {
     renderer.render(scene, camera);
 }
 
-// Calculate 20 face rotations based on icosahedron symmetry
-// Starting from your model's natural "face-forward" orientation
-function generateD20Faces() {
+let d20Faces = [];
+let isCalibrated = false;
+
+// Generate 20 faces from a base rotation
+function generateFacesFromBase(baseX, baseY, baseZ) {
     const faces = [];
-    const phi = (1 + Math.sqrt(5)) / 2; // Golden ratio
     
-    // Your model's natural face-forward is approximately this tilt
-    const baseTilt = -0.6; // Slight downward tilt for face-forward
+    // 20 faces distributed in 4 rings of 5 faces each
+    // Each ring differs by ~63.43° in X (1.107 radians)
+    const ringTilt = 1.107; // Icosahedron face-to-face angle
     
-    // 5 faces around the top ring
-    for (let i = 0; i < 5; i++) {
-        faces.push({
-            x: baseTilt,
-            y: (Math.PI * 2 / 5) * i,
-            z: 0
-        });
-    }
-    
-    // 5 faces around upper-middle ring
-    for (let i = 0; i < 5; i++) {
-        faces.push({
-            x: baseTilt + 1.107,
-            y: (Math.PI * 2 / 5) * i + Math.PI / 5,
-            z: 0
-        });
-    }
-    
-    // 5 faces around lower-middle ring
-    for (let i = 0; i < 5; i++) {
-        faces.push({
-            x: baseTilt + Math.PI - 1.107,
-            y: (Math.PI * 2 / 5) * i,
-            z: 0
-        });
-    }
-    
-    // 5 faces around bottom ring
-    for (let i = 0; i < 5; i++) {
-        faces.push({
-            x: baseTilt + Math.PI,
-            y: (Math.PI * 2 / 5) * i + Math.PI / 5,
-            z: 0
-        });
+    for (let ring = 0; ring < 4; ring++) {
+        for (let i = 0; i < 5; i++) {
+            const xOffset = ring * ringTilt;
+            const yOffset = (Math.PI * 2 / 5) * i + (ring % 2 ? Math.PI / 5 : 0);
+            
+            faces.push({
+                x: baseX + xOffset,
+                y: baseY + yOffset,
+                z: baseZ
+            });
+        }
     }
     
     return faces;
 }
 
-const d20Faces = generateD20Faces();
+// Calibrate button - captures current "good" position
+document.getElementById('calibrateButton').addEventListener('click', () => {
+    if (dice) {
+        // Use current dice rotation as the base
+        d20Faces = generateFacesFromBase(
+            dice.rotation.x,
+            dice.rotation.y,
+            dice.rotation.z
+        );
+        isCalibrated = true;
+        alert('Calibrated! Now all 20 faces will match this viewing angle.');
+    }
+});
 
+// Roll button
 document.getElementById('rollButton').addEventListener('click', () => {
+    if (!isCalibrated) {
+        alert('Please calibrate first! Position the dice to show a clear face, then click Calibrate.');
+        return;
+    }
+    
     if (dice && !rolling) {
         rolling = true;
         rollStartTime = performance.now();
