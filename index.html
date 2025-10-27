@@ -105,6 +105,14 @@ renderer.setSize(300, 300);
 renderer.setClearColor(0x000000, 0);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+// Enhanced antialiasing
+renderer.antialias = true;
+renderer.powerPreference = "high-performance";
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.2;
+
 // Enhanced lighting setup
 const mainLight = new THREE.DirectionalLight(0xffffff, 0.9);
 mainLight.position.set(5, 5, 5);
@@ -198,30 +206,31 @@ function animate(time) {
     renderer.render(scene, camera);
 }
 
-// D20 face rotations - each represents one face pointing at camera
+// Accurate D20 (icosahedron) face orientations
+// Based on golden ratio and proper 3D geometry
 const d20Faces = [
     { x: 0, y: 0, z: 0 },
+    { x: 0, y: Math.PI * 2/5, z: 0 },
+    { x: 0, y: Math.PI * 4/5, z: 0 },
+    { x: 0, y: Math.PI * 6/5, z: 0 },
+    { x: 0, y: Math.PI * 8/5, z: 0 },
     { x: Math.PI, y: 0, z: 0 },
-    { x: 0, y: Math.PI / 2, z: 0 },
-    { x: 0, y: -Math.PI / 2, z: 0 },
-    { x: 0, y: Math.PI, z: 0 },
-    { x: Math.PI / 2, y: 0, z: 0 },
-    { x: -Math.PI / 2, y: 0, z: 0 },
-    { x: 0.5527, y: 0, z: 0 },
-    { x: -0.5527, y: 0, z: 0 },
-    { x: 0.5527, y: Math.PI, z: 0 },
-    { x: -0.5527, y: Math.PI, z: 0 },
-    { x: 0, y: 0.5527, z: 0 },
-    { x: 0, y: -0.5527, z: 0 },
-    { x: Math.PI, y: 0.5527, z: 0 },
-    { x: Math.PI, y: -0.5527, z: 0 },
-    { x: 0.5527, y: Math.PI / 2, z: 0 },
-    { x: -0.5527, y: Math.PI / 2, z: 0 },
-    { x: 0.5527, y: -Math.PI / 2, z: 0 },
-    { x: -0.5527, y: -Math.PI / 2, z: 0 },
-    { x: 0, y: 0, z: Math.PI / 3 }
+    { x: Math.PI, y: Math.PI * 2/5, z: 0 },
+    { x: Math.PI, y: Math.PI * 4/5, z: 0 },
+    { x: Math.PI, y: Math.PI * 6/5, z: 0 },
+    { x: Math.PI, y: Math.PI * 8/5, z: 0 },
+    { x: 1.017, y: 0, z: 0 },
+    { x: 1.017, y: Math.PI * 2/5, z: 0 },
+    { x: 1.017, y: Math.PI * 4/5, z: 0 },
+    { x: 1.017, y: Math.PI * 6/5, z: 0 },
+    { x: 1.017, y: Math.PI * 8/5, z: 0 },
+    { x: -1.017, y: Math.PI/5, z: 0 },
+    { x: -1.017, y: Math.PI * 3/5, z: 0 },
+    { x: -1.017, y: Math.PI, z: 0 },
+    { x: -1.017, y: Math.PI * 7/5, z: 0 },
+    { x: -1.017, y: Math.PI * 9/5, z: 0 }
 ];
-
+    
 document.getElementById('rollButton').addEventListener('click', () => {
     if (dice) {
         rolling = true;
