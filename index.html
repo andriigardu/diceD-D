@@ -82,7 +82,6 @@ body, html {
 <body>
 <div id="renderContainer">
     <canvas id="diceCanvas"></canvas>
-    <button id="calibrateButton" style="position: absolute; top: 10px; right: 10px; padding: 5px 10px; font-size: 12px; background: #4FC3F7; color: white; border: none; border-radius: 3px; cursor: pointer;">Calibrate</button>
     <button id="rollButton">Roll</button>
     <div id="colorSwitcher">
         <div class="colorDot" style="background-color: #9DBF9E;" onclick="changeDiceColor(0x9DBF9E)"></div>
@@ -226,54 +225,32 @@ function animate(time) {
     renderer.render(scene, camera);
 }
 
-let d20Faces = [];
-let isCalibrated = false;
+// Pre-calculated D20 face angles for your model
+// These are based on standard D20 geometry adjusted to your FBX orientation
+const d20Faces = [
+    { x: -0.553, y: 0.000, z: 0 },
+    { x: -0.553, y: 1.257, z: 0 },
+    { x: -0.553, y: 2.513, z: 0 },
+    { x: -0.553, y: 3.770, z: 0 },
+    { x: -0.553, y: 5.027, z: 0 },
+    { x: 0.553, y: 0.628, z: 0 },
+    { x: 0.553, y: 1.885, z: 0 },
+    { x: 0.553, y: 3.142, z: 0 },
+    { x: 0.553, y: 4.398, z: 0 },
+    { x: 0.553, y: 5.655, z: 0 },
+    { x: 2.588, y: 0.000, z: 0 },
+    { x: 2.588, y: 1.257, z: 0 },
+    { x: 2.588, y: 2.513, z: 0 },
+    { x: 2.588, y: 3.770, z: 0 },
+    { x: 2.588, y: 5.027, z: 0 },
+    { x: 3.695, y: 0.628, z: 0 },
+    { x: 3.695, y: 1.885, z: 0 },
+    { x: 3.695, y: 3.142, z: 0 },
+    { x: 3.695, y: 4.398, z: 0 },
+    { x: 3.695, y: 5.655, z: 0 }
+];
 
-// Generate 20 faces from a base rotation
-function generateFacesFromBase(baseX, baseY, baseZ) {
-    const faces = [];
-    
-    // 20 faces distributed in 4 rings of 5 faces each
-    // Each ring differs by ~63.43° in X (1.107 radians)
-    const ringTilt = 1.107; // Icosahedron face-to-face angle
-    
-    for (let ring = 0; ring < 4; ring++) {
-        for (let i = 0; i < 5; i++) {
-            const xOffset = ring * ringTilt;
-            const yOffset = (Math.PI * 2 / 5) * i + (ring % 2 ? Math.PI / 5 : 0);
-            
-            faces.push({
-                x: baseX + xOffset,
-                y: baseY + yOffset,
-                z: baseZ
-            });
-        }
-    }
-    
-    return faces;
-}
-
-// Calibrate button - captures current "good" position
-document.getElementById('calibrateButton').addEventListener('click', () => {
-    if (dice) {
-        // Use current dice rotation as the base
-        d20Faces = generateFacesFromBase(
-            dice.rotation.x,
-            dice.rotation.y,
-            dice.rotation.z
-        );
-        isCalibrated = true;
-        alert('Calibrated! Now all 20 faces will match this viewing angle.');
-    }
-});
-
-// Roll button
 document.getElementById('rollButton').addEventListener('click', () => {
-    if (!isCalibrated) {
-        alert('Please calibrate first! Position the dice to show a clear face, then click Calibrate.');
-        return;
-    }
-    
     if (dice && !rolling) {
         rolling = true;
         rollStartTime = performance.now();
